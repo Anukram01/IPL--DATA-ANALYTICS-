@@ -23,4 +23,4 @@ An end-to-end exploratory data analytics and SQL querying project evaluating his
 Included in `queries.sql`:
 1. **Venue-Wise Toss Conversion Efficiency:** Calculates match win percentages when a team wins both the toss and the match across grounds with ≥ 15 fixtures.
 2. **Dominant Victories Extraction:** Filters high-margin blowout victories by runs and wickets to evaluate squad dominance.
-3. 
+3. **Top Ground Defending/Chasing Breakdown:** Analyzes team win ratios based on batting first vs fielding first across primary tournament stadiums.
