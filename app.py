@@ -53,7 +53,7 @@ team_key_players = {
 }
 
 st.title("🏏 IPL Outcome Predictor")
-st.caption("Predict match win probabilities based on historical IPL records and franchise strength.")
+st.caption("Predict match win probabilities based on team strength, toss, and active player form.")
 
 team1 = st.selectbox("Select Team 1", teams, index=teams.index("Royal Challengers Bengaluru"))
 
@@ -65,17 +65,18 @@ venue = st.selectbox("Select Venue", venues)
 toss_winner = st.selectbox("Toss Winner", [team1, team2])
 toss_decision = st.selectbox("Toss Decision", ['bat', 'field'])
 
-# Collapsible Key Players Section (Clean UI)
-with st.expander("⭐ View Key Squad Performers"):
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown(f"**{team1}**")
-        for p in team_key_players.get(team1, []):
-            st.markdown(f"- {p}")
-    with c2:
-        st.markdown(f"**{team2}**")
-        for p in team_key_players.get(team2, []):
-            st.markdown(f"- {p}")
+# Dynamic Player Form Impact Section
+with st.expander("⭐ Select In-Form Impact Players (Affects Probability)"):
+    st.write("Jin players ko aap select karenge, unka positive impact team ke winning chances badhayega:")
+    col_p1, col_p2 = st.columns(2)
+    
+    with col_p1:
+        st.markdown(f"**{team1} Stars**")
+        selected_p1 = [p for p in team_key_players.get(team1, []) if st.checkbox(p, value=True, key=f"t1_{p}")]
+        
+    with col_p2:
+        st.markdown(f"**{team2} Stars**")
+        selected_p2 = [p for p in team_key_players.get(team2, []) if st.checkbox(p, value=True, key=f"t2_{p}")]
 
 st.write("")
 
@@ -83,11 +84,18 @@ if st.button("Predict Win Probability", type="primary", use_container_width=True
     r1 = base_ratings.get(team1, 1.0)
     r2 = base_ratings.get(team2, 1.0)
 
-    # Toss impact
+    # 1. Toss Impact (+5% advantage)
     if toss_winner == team1:
         r1 *= 1.05
     else:
         r2 *= 1.05
+
+    # 2. Player Form Impact (Har active star player team rating me +3% add karega)
+    player_boost_1 = 1 + (len(selected_p1) * 0.03)
+    player_boost_2 = 1 + (len(selected_p2) * 0.03)
+    
+    r1 *= player_boost_1
+    r2 *= player_boost_2
 
     p1 = (r1 / (r1 + r2)) * 100
     p2 = 100 - p1
@@ -96,8 +104,8 @@ if st.button("Predict Win Probability", type="primary", use_container_width=True
     st.subheader("Match Outcome Probability")
     st.progress(int(p1))
     
-    st.write(f"**{team1}**: `{round(p1, 1)}%`")
-    st.write(f"**{team2}**: `{round(p2, 1)}%`")
+    st.write(f"**{team1}**: `{round(p1, 1)}%` (Active Impact Players: {len(selected_p1)})")
+    st.write(f"**{team2}**: `{round(p2, 1)}%` (Active Impact Players: {len(selected_p2)})")
 
     if p1 > p2:
         st.success(f"🏆 Predicted Winner: **{team1}**")
