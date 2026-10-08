@@ -2,12 +2,12 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(
-    page_title="IPL Match Analytics & Predictor",
+    page_title="IPL Match Analytics & Intelligence",
     page_icon="🏏",
     layout="wide"
 )
 
-# ----------------- DATA & CONSTANTS -----------------
+# ----------------- HISTORICAL & METADATA -----------------
 teams = [
     "Chennai Super Kings",
     "Delhi Capitals",
@@ -20,6 +20,19 @@ teams = [
     "Royal Challengers Bengaluru",
     "Sunrisers Hyderabad"
 ]
+
+team_profiles = {
+    "Chennai Super Kings": {"titles": 5, "finals": 10, "win_pct": 58.2, "highest": 246, "lowest": 79},
+    "Mumbai Indians": {"titles": 5, "finals": 6, "win_pct": 56.4, "highest": 247, "lowest": 87},
+    "Kolkata Knight Riders": {"titles": 3, "finals": 4, "win_pct": 52.1, "highest": 272, "lowest": 67},
+    "Gujarat Titans": {"titles": 1, "finals": 2, "win_pct": 62.5, "highest": 233, "lowest": 89},
+    "Rajasthan Royals": {"titles": 1, "finals": 2, "win_pct": 50.8, "highest": 226, "lowest": 58},
+    "Sunrisers Hyderabad": {"titles": 1, "finals": 3, "win_pct": 49.3, "highest": 287, "lowest": 96},
+    "Royal Challengers Bengaluru": {"titles": 0, "finals": 3, "win_pct": 48.7, "highest": 263, "lowest": 49},
+    "Delhi Capitals": {"titles": 0, "finals": 1, "win_pct": 45.9, "highest": 257, "lowest": 66},
+    "Punjab Kings": {"titles": 0, "finals": 1, "win_pct": 45.2, "highest": 262, "lowest": 73},
+    "Lucknow Super Giants": {"titles": 0, "finals": 0, "win_pct": 54.3, "highest": 257, "lowest": 108}
+}
 
 venues_data = {
     "Wankhede Stadium, Mumbai": {"avg_score": 185, "bias": "chase", "chase_win_pct": "57%"},
@@ -62,20 +75,25 @@ team_key_players = {
 with st.sidebar:
     st.header("⚙️ Project Architecture")
     st.markdown("""
-    **Model Features Considered:**
-    - 📊 Franchise Historical Ratings
+    **Core Engine Parameters:**
+    - 📊 Franchise Historical Ratings & Titles
     - 🏟️ Pitch & Venue Chase Bias
     - 🪙 Toss Decision Dynamics
-    - ⭐ Active Impact Star Factor
-    - ⏱️ In-Match Run Rate Pressures
+    - ⭐ Active Impact Star Squads
+    - ⏱️ 2nd Innings CRR vs RRR Pressure
+    - 📈 Projected 1st Innings Par Scores
     """)
     st.divider()
     st.markdown("**Repository:** [GitHub IPL Analytics](https://github.com/Anukram01/IPL--DATA-ANALYTICS-)")
     st.caption("Developed by Anukram Sachan")
 
-# ----------------- MAIN APP TABS -----------------
-st.title("🏏 IPL Match Intelligence & Analytics")
-tab1, tab2 = st.tabs(["🔮 Pre-Match Outcome Predictor", "⚡ Live Chase In-Match Simulator"])
+# ----------------- MAIN TABS -----------------
+st.title("🏏 IPL Match Intelligence Dashboard")
+tab1, tab2, tab3 = st.tabs([
+    "🔮 Pre-Match Outcome Predictor", 
+    "⚡ Live Chase In-Match Simulator",
+    "📚 Franchise Records & Head-to-Head"
+])
 
 # ================= TAB 1: PRE-MATCH PREDICTOR =================
 with tab1:
@@ -93,13 +111,26 @@ with tab1:
     vc1, vc2, vc3 = st.columns(3)
     vc1.metric("Avg 1st Innings Score", f"{v_info['avg_score']} runs")
     vc2.metric("Chasing Win Rate", v_info["chase_win_pct"])
-    vc3.metric("Venue Recommendation", "Chase & Field" if v_info["bias"] == "chase" else "Defend & Bat")
+    vc3.metric("Venue Strategy", "Chase & Field" if v_info["bias"] == "chase" else "Defend & Bat")
 
     c_toss1, c_toss2 = st.columns(2)
     with c_toss1:
         toss_winner = st.selectbox("Toss Winner", [team1, team2], key="pm_toss_win")
     with c_toss2:
         toss_decision = st.selectbox("Toss Decision", ['bat', 'field'], key="pm_toss_dec")
+
+    # Batting 1st determination
+    batting_first = toss_winner if toss_decision == 'bat' else (team2 if toss_winner == team1 else team1)
+
+    # Projected Score Section
+    base_par = v_info["avg_score"]
+    bat_factor = (team_strengths[batting_first]["batting"] - 8.5) * 12
+    proj_min = int(base_par + bat_factor - 7)
+    proj_max = int(base_par + bat_factor + 8)
+    pp_min = int(proj_min * 0.28)
+    pp_max = int(proj_max * 0.31)
+
+    st.info(f"🎯 **Projected 1st Innings Target Range ({batting_first} Batting 1st):** **{proj_min} - {proj_max} runs** (Expected Powerplay: {pp_min} - {pp_max} runs)")
 
     with st.expander("⭐ Select In-Form Impact Players (Live Form Factor)"):
         pcol1, pcol2 = st.columns(2)
@@ -121,14 +152,14 @@ with tab1:
         else:
             r2 *= 1.04
 
-        # Pitch strategy alignment (+4%)
+        # Venue strategy match (+4%)
         if (v_info["bias"] == "chase" and toss_decision == "field") or (v_info["bias"] == "defend" and toss_decision == "bat"):
             if toss_winner == team1:
                 r1 *= 1.04
             else:
                 r2 *= 1.04
 
-        # Active player form factor
+        # Player form factor
         r1 *= (1 + (len(selected_p1) * 0.03))
         r2 *= (1 + (len(selected_p2) * 0.03))
 
@@ -145,7 +176,6 @@ with tab1:
         favored = team1 if p1 > p2 else team2
         st.success(f"🏆 Favored Winner: **{favored}**")
 
-        # Head to Head squad matchup chart
         st.subheader("📊 Squad Index Comparison")
         comp_df = pd.DataFrame({
             "Metric": ["Batting Index (/10)", "Bowling Index (/10)", "Win Likelihood %"],
@@ -154,11 +184,11 @@ with tab1:
         }).set_index("Metric")
         st.bar_chart(comp_df)
 
-        # Download Match Intelligence Report
         report_text = f"""=== IPL MATCH INTELLIGENCE REPORT ===
 Matchup: {team1} vs {team2}
 Venue: {venue}
-Avg 1st Innings: {v_info['avg_score']} | Chasing Win Rate: {v_info['chase_win_pct']}
+Projected 1st Innings Range: {proj_min} - {proj_max} runs (Batting 1st: {batting_first})
+Avg 1st Innings Par: {v_info['avg_score']} | Chasing Win Rate: {v_info['chase_win_pct']}
 Toss Winner: {toss_winner} (Chose to {toss_decision})
 Predicted Win Probabilities:
   - {team1}: {round(p1, 1)}%
@@ -195,7 +225,6 @@ with tab2:
     with sc4:
         overs_done = st.number_input("Overs Completed", min_value=1.0, max_value=19.5, value=11.4, step=0.1)
 
-    # Calculation logic for in-play state
     legal_balls = int(overs_done) * 6 + int(round((overs_done - int(overs_done)) * 10))
     balls_left = max(1, 120 - legal_balls)
     runs_needed = max(0, target - current_score)
@@ -214,11 +243,8 @@ with tab2:
         if runs_needed <= 0:
             st.success(f"🎉 {chasing_team} has reached the target and won the match!")
         else:
-            # Baseline probability from remaining wickets & run-rate gap
             rate_delta = crr - rrr
             base_chase_prob = 50 + (rate_delta * 4.5) + ((wickets_left - 5) * 4.0)
-
-            # Cap limits
             base_chase_prob = max(3.0, min(97.0, base_chase_prob))
             defend_prob = 100.0 - base_chase_prob
 
@@ -233,4 +259,34 @@ with tab2:
                 st.info(f"📈 **Match Trend:** {chasing_team} is currently favored to chase down the target with {wickets_left} wickets intact.")
             else:
                 st.warning(f"📉 **Match Trend:** Required run rate ({rrr:.2f}) is putting pressure on {chasing_team}. {defending_team} is in the driver's seat.")
-    
+
+# ================= TAB 3: RECORDS EXPLORER =================
+with tab3:
+    st.subheader("📚 Historical Franchise Legacy & Records Explorer")
+    st.caption("Compare career tournament statistics, championship titles, and historical extreme scores.")
+
+    r_col1, r_col2 = st.columns(2)
+    with r_col1:
+        hist_t1 = st.selectbox("Franchise 1", teams, index=teams.index("Royal Challengers Bengaluru"), key="hist_t1")
+    with r_col2:
+        hist_t2 = st.selectbox("Franchise 2", [t for t in teams if t != hist_t1], index=0, key="hist_t2")
+
+    t1_p = team_profiles[hist_t1]
+    t2_p = team_profiles[hist_t2]
+
+    # Metrics comparison grid
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Titles Won", f"{t1_p['titles']} vs {t2_p['titles']}")
+    m2.metric("Finals Reached", f"{t1_p['finals']} vs {t2_p['finals']}")
+    m3.metric("Career Win Rate", f"{t1_p['win_pct']}% vs {t2_p['win_pct']}%")
+    m4.metric("Highest Total", f"{t1_p['highest']} vs {t2_p['highest']}")
+
+    st.write("")
+    records_df = pd.DataFrame({
+        "Metric": ["IPL Titles 🏆", "Finals Appearances", "Historical Win %", "Highest Team Score", "Lowest Team Score"],
+        hist_t1: [t1_p["titles"], t1_p["finals"], f"{t1_p['win_pct']}%", t1_p["highest"], t1_p["lowest"]],
+        hist_t2: [t2_p["titles"], t2_p["finals"], f"{t2_p['win_pct']}%", t2_p["highest"], t2_p["lowest"]]
+    }).set_index("Metric")
+
+    st.table(records_df)
+        
