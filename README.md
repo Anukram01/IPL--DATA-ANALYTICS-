@@ -1,26 +1,48 @@
-# 🏏 IPL Match & Franchise Analytics (2008–Present)
+# 🏏 IPL Match Intelligence & Analytics Platform
 
-### 📌 Project Overview
-An end-to-end exploratory data analytics and SQL querying project evaluating historical Indian Premier League (IPL) match records. The objective is to extract data-driven insights into venue-specific toss conversion efficiency, team victory margin distributions, and historical franchise ground dominance.
-
----
-
-### 🔍 Key Analytical Findings
-- **Venue Toss Conversion Bias:** Certain stadiums demonstrate a notable toss-winner match conversion rate (>55%), highlighting chasing advantages and dew impact.
-- **Victory Margin Patterns:** Quantified average winning margins across target-defending vs chasing dynamics, isolating high-impact blowout victories (>50 runs or 8+ wickets).
-- **Franchise Ground Dominance:** Identified top multi-season winning franchises and their venue-specific win conversion rates.
+An end-to-end interactive cricket analytics and outcome simulation dashboard built with **Python**, **Streamlit**, and **Pandas**. The platform combines historical franchise statistics, venue pitch dynamics, toss impact, squad availability, and dynamic DLS rain-reduction rules to deliver real-time match predictions and deep squad insights.
 
 ---
 
-### 🛠️ Tech Stack
-- **Languages:** Python (Pandas, Matplotlib, Seaborn), SQL
-- **Database / Query Engine:** SQLite
-- **Environment:** Google Colab / Jupyter Notebook
+### 🚀 Live Interactive Demo
+👉 **[Launch Live IPL Dashboard](https://ipl-prediction-anukram2.streamlit.app/)**
 
 ---
 
-### 📊 SQL Analytical Highlights
-Included in `queries.sql`:
-1. **Venue-Wise Toss Conversion Efficiency:** Calculates match win percentages when a team wins both the toss and the match across grounds with ≥ 15 fixtures.
-2. **Dominant Victories Extraction:** Filters high-margin blowout victories by runs and wickets to evaluate squad dominance.
-3. **Top Ground Defending/Chasing Breakdown:** Analyzes team win ratios based on batting first vs fielding first across primary tournament stadiums.
+## 📌 Key Architectural Features
+
+### 1. 🔮 Pre-Match Outcome Predictor
+- **Dynamic Multi-Factor Modeling:** Computes win probabilities using historical franchise base strengths, toss decisions, and venue-specific chasing bias.
+- **Active Impact Star Selector:** Real-time squad availability toggles that adjust team ratings dynamically based on playing XI match-winners.
+- **1st Innings Par & Powerplay Estimator:** Predicts expected target score ranges and powerplay scores based on stadium historical averages and batting indices.
+- **Visual Squad Index Comparison:** Head-to-head comparative chart displaying Batting Index, Bowling Strength, and Win Likelihood.
+- **Exportable Match Report:** Single-click download of a formatted `Match Intelligence Report (.txt)` for technical summaries.
+
+### 2. ⚡ Live In-Match Chase & DLS Simulator
+- **Real-Time Pressure Engine:** Calculates live 2nd-innings win probabilities using Required Run Rate (RRR) vs. Current Run Rate (CRR) delta and wickets in hand.
+- **🌧️ DLS Rain Revision Engine:** Simulates rain interruptions with shortened match overs (5 to 19 overs), automatically recalculating revised targets and escalating run-rate requirements.
+
+### 3. 📚 Franchise Records & Head-to-Head Explorer
+- Interactive multi-season historical comparison of IPL franchises.
+- Evaluates career win percentages, tournament titles, finals appearances, and highest/lowest total records.
+
+---
+
+## 🛠️ Tech Stack & Libraries
+- **Language:** Python
+- **Dashboard Framework:** Streamlit
+- **Data Manipulation & Analytics:** Pandas
+- **Exploratory Analytics & Queries:** SQL / SQLite
+- **Deployment:** Streamlit Cloud & GitHub
+
+---
+
+## 💻 How to Run Locally
+
+If you prefer to run and inspect the application on your local machine:
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Anukram01/IPL--DATA-ANALYTICS-.git](https://github.com/Anukram01/IPL--DATA-ANALYTICS-.git)
+   cd IPL--DATA-ANALYTICS-
+   
