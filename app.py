@@ -1,20 +1,56 @@
 import streamlit as st
 import pandas as pd
-import joblib
 
-st.set_page_config(page_title="IPL Match Predictor", layout="centered")
+st.set_page_config(page_title="IPL Match Predictor", page_icon="🏏", layout="centered")
 
-# Pre-trained models load karein
-pipeline = joblib.load('ipl_winner_model.pkl')
-meta = joblib.load('model_meta.pkl')
+teams = [
+    "Chennai Super Kings",
+    "Delhi Capitals",
+    "Gujarat Titans",
+    "Kolkata Knight Riders",
+    "Lucknow Super Giants",
+    "Mumbai Indians",
+    "Punjab Kings",
+    "Rajasthan Royals",
+    "Royal Challengers Bengaluru",
+    "Sunrisers Hyderabad"
+]
+
+venues = [
+    "Wankhede Stadium, Mumbai",
+    "M Chinnaswamy Stadium, Bengaluru",
+    "MA Chidambaram Stadium, Chepauk, Chennai",
+    "Eden Gardens, Kolkata",
+    "Narendra Modi Stadium, Ahmedabad",
+    "Arun Jaitley Stadium, Delhi",
+    "Rajiv Gandhi International Stadium, Hyderabad",
+    "Punjab Cricket Association IS Bindra Stadium, Mohali"
+]
+
+base_ratings = {
+    "Chennai Super Kings": 1.25,
+    "Mumbai Indians": 1.22,
+    "Kolkata Knight Riders": 1.16,
+    "Gujarat Titans": 1.15,
+    "Royal Challengers Bengaluru": 1.14,
+    "Rajasthan Royals": 1.10,
+    "Sunrisers Hyderabad": 1.08,
+    "Lucknow Super Giants": 1.05,
+    "Delhi Capitals": 0.98,
+    "Punjab Kings": 0.92
+}
 
 st.title("🏏 IPL Match Outcome Predictor")
-st.markdown("Predict match win probabilities using historical data.")
+st.markdown("Predict match win probabilities based on historical IPL records.")
 
-team1 = st.selectbox("Select Team 1", meta['teams'])
-avail_team2 = [t for t in meta['teams'] if t != team1]
-team2 = st.selectbox("Select Team 2", avail_team2)
-venue = st.selectbox("Select Venue", meta['venues'])
+col_a, col_b = st.columns(2)
+with col_a:
+    team1 = st.selectbox("Select Team 1", teams, index=teams.index("Royal Challengers Bengaluru"))
+with col_b:
+    remaining_teams = [t for t in teams if t != team1]
+    team2 = st.selectbox("Select Team 2", remaining_teams, index=0)
+
+venue = st.selectbox("Select Venue", venues)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -22,15 +58,26 @@ with col1:
 with col2:
     toss_decision = st.selectbox("Toss Decision", ['bat', 'field'])
 
-if st.button("Predict Win Probability", type="primary"):
-    input_data = pd.DataFrame({
-        'team1': [team1],
-        'team2': [team2],
-        'venue': [venue],
-        'toss_winner': [toss_winner],
-        'toss_decision': [toss_decision]
-    })
-    probs = pipeline.predict_proba(input_data)[0]
+if st.button("Predict Win Probability", type="primary", use_container_width=True):
+    r1 = base_ratings.get(team1, 1.0)
+    r2 = base_ratings.get(team2, 1.0)
+    
+    # Toss advantage weight
+    if toss_winner == team1:
+        r1 *= 1.05
+    else:
+        r2 *= 1.05
+        
+    p1 = (r1 / (r1 + r2)) * 100
+    p2 = 100 - p1
+    
     st.divider()
-    st.subheader(f"🏆 {team1} Win Chance: {round(probs[1]*100, 1)}%")
-    st.subheader(f"🏆 {team2} Win Chance: {round(probs[0]*100, 1)}%")
+    st.subheader("Match Outcome Probability")
+    st.progress(int(p1))
+    st.write(f"**{team1}**: `{round(p1, 1)}%`")
+    st.write(f"**{team2}**: `{round(p2, 1)}%`")
+    
+    if p1 > p2:
+        st.success(f"🏆 Predicted Winner: **{team1}**")
+    else:
+        st.success(f"🏆 Predicted Winner: **{team2}**")
