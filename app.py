@@ -101,35 +101,5 @@ with tab1:
     col_t1, col_t2 = st.columns(2)
     with col_t1:
         team1 = st.selectbox("Select Team 1", teams, index=teams.index("Royal Challengers Bengaluru"), key="pm_t1")
-    with col_t2:
-        remaining_teams = [t for t in teams if t != team1]
-        team2 = st.selectbox("Select Team 2", remaining_teams, index=remaining_teams.index("Chennai Super Kings") if "Chennai Super Kings" in remaining_teams else 0, key="pm_t2")
-
-    venue = st.selectbox("Select Venue", list(venues_data.keys()), key="pm_venue")
-
-    # Venue Insights Cards
-    v_info = venues_data[venue]
-    vc1, vc2, vc3 = st.columns(3)
-    vc1.metric("Avg 1st Innings Score", f"{v_info['avg_score']} runs")
-    vc2.metric("Chasing Win Rate", v_info["chase_win_pct"])
-    vc3.metric("Venue Strategy", "Chase & Field" if v_info["bias"] == "chase" else "Defend & Bat")
-
-    c_toss1, c_toss2 = st.columns(2)
-    with c_toss1:
-        toss_winner = st.selectbox("Toss Winner", [team1, team2], key="pm_toss_win")
-    with c_toss2:
-        toss_decision = st.selectbox("Toss Decision", ['bat', 'field'], key="pm_toss_dec")
-
-    # Batting 1st determination
-    batting_first = toss_winner if toss_decision == 'bat' else (team2 if toss_winner == team1 else team1)
-
-    # Projected Score Section
-    base_par = v_info["avg_score"]
-    bat_factor = (team_strengths[batting_first]["batting"] - 8.5) * 12
-    proj_min = int(base_par + bat_factor - 7)
-    proj_max = int(base_par + bat_factor + 8)
-    pp_min = int(proj_min * 0.28)
-    pp_max = int(proj_max * 0.31)
-
-    st.info(f"🎯 **Projected 1st Innings Target Range ({batting_first} Batting 1st):** **{proj_min} - {proj_
+    with col_
     
